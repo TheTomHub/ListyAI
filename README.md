@@ -6,19 +6,29 @@ An iOS app that extracts lists from spoken conversations in real-time using AI.
 
 List-y is a simple, powerful iOS app that:
 - Records and transcribes speech in real-time using Apple's Speech framework
-- Will extract list items (pros, cons, features, ideas, action items) using Claude API
-- Displays categorized lists as you speak
-- Allows exporting to clipboard or Notes
+- Extracts list items (pros, cons, features, ideas, action items) using Claude API
+- Displays categorized lists as you speak in real-time
+- Allows exporting to clipboard in markdown format
 
-## Current Status: Step 1 Complete ✅
+## Current Status: Step 2 Complete ✅
 
 **Implemented Features:**
+
+**Step 1 - Basic Recording & Transcription:**
 - Single screen with big "Record" button
 - Real-time speech transcription using Apple's Speech framework
-- Audio capture with AVAudioRecorder
+- Audio capture with AVAudioEngine
 - Live display of transcribed text
 - Stop button to end recording
 - Permission handling for microphone and speech recognition
+
+**Step 2 - Claude API Integration & List Extraction:**
+- Claude API integration using claude-sonnet-4-20250514 model
+- Automatic list extraction every 10 seconds during recording
+- Smart categorization (Pros, Cons, Suggestions, Action Items, etc.)
+- Real-time display of extracted lists
+- "Copy All Lists" button for exporting as markdown
+- Secure API key storage (gitignored Config.swift)
 
 ## Project Structure
 
@@ -26,10 +36,15 @@ List-y is a simple, powerful iOS app that:
 ListyAI/
 ├── ListyAI/
 │   ├── ListyAIApp.swift              # Main app entry point
-│   ├── ContentView.swift              # Main UI with record button
-│   ├── SpeechRecognitionManager.swift # Handles speech recognition
+│   ├── ContentView.swift              # Main UI with lists display
+│   ├── SpeechRecognitionManager.swift # Speech recognition & list extraction
+│   ├── ClaudeAPIService.swift         # Claude API integration
+│   ├── Models.swift                   # Data models for lists
+│   ├── Config.swift                   # API configuration (gitignored)
+│   ├── Config.example.swift           # Example config file
 │   ├── Info.plist                     # Required permissions
 │   └── Assets.xcassets/               # App assets
+├── .gitignore                         # Git ignore file
 └── ListyAI.xcodeproj/                 # Xcode project file
 ```
 
@@ -39,43 +54,75 @@ ListyAI/
 - macOS with Xcode 15.0 or later
 - iOS 16.0+ device or simulator
 - Apple Developer account (for device deployment)
+- **Anthropic API key** (get one at https://console.anthropic.com/)
 
 ### Getting Started
 
-1. **Open the project in Xcode:**
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd ListyAI
+   ```
+
+2. **Configure API Key:**
+   ```bash
+   # Config.swift is already created but gitignored
+   # Open it and replace "your-api-key-here" with your actual Anthropic API key
+   ```
+
+   Or manually:
+   - Open `ListyAI/Config.swift`
+   - Replace `"your-api-key-here"` with your Anthropic API key
+   - Save the file (it's gitignored so your key stays private)
+
+3. **Open the project in Xcode:**
    ```bash
    open ListyAI.xcodeproj
    ```
 
-2. **Select your target device:**
+4. **Select your target device:**
    - Choose a physical iPhone or iPad (recommended for best speech recognition)
    - Or use the iOS Simulator (speech recognition has limitations)
 
-3. **Run the app:**
+5. **Run the app:**
    - Press `Cmd + R` or click the Play button
    - The app will request microphone and speech recognition permissions
    - Grant both permissions when prompted
 
-4. **Test the app:**
+6. **Test the app:**
    - Tap the big blue "Record" button
-   - Start speaking
-   - Watch your words appear in real-time in the transcription area
+   - Start speaking naturally about lists (e.g., "Let me list the pros and cons...")
+   - Watch transcription appear in real-time
+   - Every 10 seconds, Claude will extract and categorize list items
+   - Extracted lists appear below the transcription
+   - Tap "Copy All" to copy lists as markdown
    - Tap the red "Stop" button to end recording
 
 ## How It Works
 
 ### SpeechRecognitionManager
-The core speech recognition logic is in `SpeechRecognitionManager.swift:1`:
+The core speech recognition and list extraction logic (`SpeechRecognitionManager.swift:1`):
 - Manages AVAudioEngine for audio capture
-- Uses SFSpeechRecognizer for transcription
-- Publishes real-time transcription updates via @Published properties
+- Uses SFSpeechRecognizer for real-time transcription
+- Publishes transcription updates via @Published properties
+- Automatically sends transcription to Claude API every 10 seconds
+- Merges and deduplicates extracted list items
 - Handles permission requests and error states
 
+### ClaudeAPIService
+API integration service (`ClaudeAPIService.swift:1`):
+- Makes HTTP requests to Claude API (claude-sonnet-4-20250514)
+- Uses custom system prompt for list extraction
+- Parses JSON responses containing categorized lists
+- Handles API errors and malformed responses
+
 ### ContentView
-The UI is built with SwiftUI in `ContentView.swift:1`:
-- Clean, minimal interface focused on recording
+The UI is built with SwiftUI (`ContentView.swift:1`):
+- Clean, scrollable interface showing transcription and lists
 - Large, accessible Record/Stop button
-- Real-time transcription display
+- Real-time transcription display with extraction status
+- Category cards displaying extracted list items
+- "Copy All Lists" button for markdown export
 - Error message handling
 
 ## Permissions
@@ -90,15 +137,19 @@ The app requires two permissions (configured in `Info.plist:1`):
 
 ## Next Steps
 
-**Step 2:** Add Claude API integration
-- Send transcription chunks every 5-10 seconds to Claude
-- Extract list items from conversations
-- Categorize lists (pros, cons, features, ideas, action items)
+**Step 3:** Enhanced Export & Polish
+- Add export to Notes app directly
+- Save list history for later review
+- Add settings screen (API key, extraction interval)
+- Improve UI polish and animations
+- Add dark mode support
 
-**Step 3:** Enhanced UI
-- Display categorized lists in real-time
-- Add export functionality (clipboard, Notes app)
-- Improve visual design
+**Future Ideas:**
+- Share lists via AirDrop, Messages, or Email
+- Voice feedback when lists are detected
+- Support for multiple languages
+- Offline mode with local list extraction
+- iCloud sync across devices
 
 ## Technical Details
 
@@ -106,12 +157,41 @@ The app requires two permissions (configured in `Info.plist:1`):
 - **Framework:** SwiftUI
 - **iOS Version:** 16.0+
 - **Architecture:** MVVM pattern with ObservableObject
-- **Speech Recognition:** Apple Speech framework
-- **Audio:** AVFoundation framework
+- **Speech Recognition:** Apple Speech framework (SFSpeechRecognizer)
+- **Audio:** AVFoundation framework (AVAudioEngine)
+- **AI Model:** Claude Sonnet 4 (claude-sonnet-4-20250514)
+- **API Integration:** Direct HTTP calls using URLSession
+- **Data Format:** JSON for API requests/responses
 
 ## Known Limitations
 
 - Speech recognition requires internet connection for best results
 - iOS Simulator has limited speech recognition capabilities
 - Transcription accuracy depends on audio quality and accent
-- App currently stores only current session (no persistence)
+- List extraction requires valid Anthropic API key
+- API calls are made every 10 seconds (may incur costs based on usage)
+- App currently stores only current session (no persistence yet)
+- List extraction quality depends on how clearly lists are spoken
+
+## Example Usage
+
+Try speaking something like this:
+
+> "Let me think about the pros and cons of moving to a new city. On the pro side, there's better job opportunities, more cultural activities, and a change of scenery. For the cons, it's expensive, I'd be far from family, and I don't know anyone there. I should also make a list of action items: research neighborhoods, calculate moving costs, and visit the city for a weekend."
+
+The app will extract:
+
+**Pros:**
+- Better job opportunities
+- More cultural activities
+- Change of scenery
+
+**Cons:**
+- Expensive
+- Far from family
+- Don't know anyone there
+
+**Action Items:**
+- Research neighborhoods
+- Calculate moving costs
+- Visit the city for a weekend
