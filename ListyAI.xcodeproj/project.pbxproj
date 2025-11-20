@@ -15,6 +15,9 @@
 		AA0006 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0007 /* Models.swift */; };
 		AA0007 /* ClaudeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0008 /* ClaudeAPIService.swift */; };
 		AA0008 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0009 /* Config.swift */; };
+		AA0009 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0011 /* KeychainHelper.swift */; };
+		AA0010 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0012 /* SettingsView.swift */; };
+		AA0011 /* ShareHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0013 /* ShareHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +32,9 @@
 		BB0008 /* ClaudeAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPIService.swift; sourceTree = "<group>"; };
 		BB0009 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		BB0010 /* Config.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.example.swift; sourceTree = "<group>"; };
+		BB0011 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		BB0012 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		BB0013 /* ShareHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,9 +61,12 @@
 			children = (
 				BB0001 /* ListyAIApp.swift */,
 				BB0002 /* ContentView.swift */,
+				BB0012 /* SettingsView.swift */,
 				BB0003 /* SpeechRecognitionManager.swift */,
 				BB0007 /* Models.swift */,
 				BB0008 /* ClaudeAPIService.swift */,
+				BB0011 /* KeychainHelper.swift */,
+				BB0013 /* ShareHelper.swift */,
 				BB0009 /* Config.swift */,
 				BB0010 /* Config.example.swift */,
 				BB0004 /* Assets.xcassets */,
@@ -154,9 +163,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0002 /* ContentView.swift in Sources */,
+				AA0010 /* SettingsView.swift in Sources */,
 				AA0003 /* SpeechRecognitionManager.swift in Sources */,
 				AA0006 /* Models.swift in Sources */,
 				AA0007 /* ClaudeAPIService.swift in Sources */,
+				AA0009 /* KeychainHelper.swift in Sources */,
+				AA0011 /* ShareHelper.swift in Sources */,
 				AA0008 /* Config.swift in Sources */,
 				AA0001 /* ListyAIApp.swift in Sources */,
 			);

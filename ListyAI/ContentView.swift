@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  ListyAI
 //
-//  Main UI for recording and displaying real-time transcription
+//  Main UI for recording and displaying real-time transcription with beautiful, polished design
 //
 
 import SwiftUI
@@ -11,192 +11,340 @@ struct ContentView: View {
     @StateObject private var speechManager = SpeechRecognitionManager()
     @State private var permissionsGranted = false
     @State private var showCopiedAlert = false
+    @State private var showSettings = false
+    @State private var showShareSheet = false
+    @State private var shareText = ""
 
     var body: some View {
-        VStack(spacing: 0) {
-            // App Title
-            Text("List-y")
-                .font(.system(size: 48, weight: .bold))
-                .foregroundColor(.primary)
-                .padding(.top, 20)
-                .padding(.bottom, 20)
-
-            // Main Content Scroll View
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Transcription Display
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Transcription")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.secondary)
-
-                            if speechManager.isExtractingLists {
-                                ProgressView()
-                                    .scaleEffect(0.7)
-                                Text("Extracting lists...")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.blue)
-                            }
-
-                            Spacer()
+        NavigationView {
+            VStack(spacing: 0) {
+                // Main Content Scroll View
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Empty State
+                        if !speechManager.isRecording && speechManager.transcribedText.isEmpty && speechManager.extractedCategories.isEmpty {
+                            emptyStateView
+                                .padding(.top, 60)
                         }
-                        .padding(.horizontal)
 
-                        Text(speechManager.transcribedText.isEmpty ? "Tap Record to start transcribing..." : speechManager.transcribedText)
-                            .font(.system(size: 16))
-                            .foregroundColor(speechManager.transcribedText.isEmpty ? .gray : .primary)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(.systemGray6))
-                            )
-                            .padding(.horizontal)
-                    }
-
-                    // Extracted Lists Display
-                    if !speechManager.extractedCategories.isEmpty {
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Text("Extracted Lists")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.secondary)
-
-                                Spacer()
-
-                                // Copy All Button
-                                Button(action: {
-                                    copyAllLists()
-                                }) {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: showCopiedAlert ? "checkmark" : "doc.on.doc")
-                                            .font(.system(size: 12))
-                                        Text(showCopiedAlert ? "Copied!" : "Copy All")
-                                            .font(.system(size: 12, weight: .medium))
-                                    }
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(showCopiedAlert ? Color.green : Color.blue)
-                                    )
-                                }
-                            }
-                            .padding(.horizontal)
-
-                            // Display each category
-                            ForEach(speechManager.extractedCategories) { category in
-                                CategoryCardView(category: category)
-                            }
+                        // Transcription Section
+                        if !speechManager.transcribedText.isEmpty || speechManager.isRecording {
+                            transcriptionSection
                         }
-                        .padding(.top, 10)
-                    }
 
-                    // Error Message
-                    if !speechManager.errorMessage.isEmpty {
-                        Text(speechManager.errorMessage)
-                            .font(.system(size: 14))
-                            .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                        // Extracted Lists Section
+                        if !speechManager.extractedCategories.isEmpty {
+                            extractedListsSection
+                        }
+
+                        // Error Message
+                        if !speechManager.errorMessage.isEmpty {
+                            errorView
+                        }
                     }
+                    .padding(.bottom, 140) // Space for button
                 }
-                .padding(.bottom, 20)
+
+                Spacer()
+
+                // Bottom Controls
+                bottomControls
             }
-
-            Spacer()
-
-            // Bottom Controls
-            VStack(spacing: 12) {
-                // Recording Indicator
-                if speechManager.isRecording {
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(Color.red)
-                            .frame(width: 12, height: 12)
-                            .opacity(0.8)
-                            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: speechManager.isRecording)
-
-                        Text("Recording...")
-                            .font(.system(size: 16))
-                            .foregroundColor(.gray)
+            .navigationTitle("List-y")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if !speechManager.extractedCategories.isEmpty {
+                        Button(action: clearSession) {
+                            Label("Clear", systemImage: "trash")
+                                .foregroundColor(.red)
+                        }
                     }
                 }
 
-                // Record/Stop Button
-                Button(action: {
-                    if speechManager.isRecording {
-                        speechManager.stopRecording()
-                    } else {
-                        if permissionsGranted {
-                            speechManager.startRecording()
-                        } else {
-                            requestPermissions()
-                        }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showSettings = true }) {
+                        Image(systemName: "gearshape.fill")
+                            .foregroundColor(.primary)
                     }
-                }) {
-                    HStack(spacing: 12) {
-                        Image(systemName: speechManager.isRecording ? "stop.circle.fill" : "mic.circle.fill")
-                            .font(.system(size: 32))
+                }
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+            }
+            .shareSheet(isPresented: $showShareSheet, text: shareText)
+            .onAppear {
+                requestPermissions()
+            }
+        }
+    }
 
-                        Text(speechManager.isRecording ? "Stop" : "Record")
-                            .font(.system(size: 24, weight: .semibold))
+    // MARK: - Empty State View
+
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "waveform.circle.fill")
+                .font(.system(size: 80))
+                .foregroundColor(.blue)
+                .symbolEffect(.pulse)
+
+            Text("Turn conversations into action")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+
+            Text("Tap record and start talking about pros, cons, ideas, or action items")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+        }
+    }
+
+    // MARK: - Transcription Section
+
+    private var transcriptionSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("Transcription", systemImage: "text.bubble.fill")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                // Word count
+                Text("\(wordCount(speechManager.transcribedText)) words")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(Color(.systemGray6))
+                    )
+
+                if speechManager.isExtractingLists {
+                    HStack(spacing: 4) {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                        Text("Extracting...")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
+            .padding(.horizontal)
+
+            Text(speechManager.transcribedText)
+                .font(.body)
+                .foregroundColor(.primary)
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(.systemGray6))
+                )
+                .padding(.horizontal)
+        }
+    }
+
+    // MARK: - Extracted Lists Section
+
+    private var extractedListsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Label("Extracted Lists", systemImage: "list.bullet.circle.fill")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                // Share Button
+                Button(action: shareList) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.caption)
+                        Text("Share")
+                            .font(.caption.weight(.medium))
                     }
                     .foregroundColor(.white)
-                    .frame(width: 200, height: 80)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
                     .background(
-                        RoundedRectangle(cornerRadius: 40)
-                            .fill(speechManager.isRecording ? Color.red : Color.blue)
+                        Capsule()
+                            .fill(Color.blue)
                     )
-                    .shadow(color: speechManager.isRecording ? .red.opacity(0.3) : .blue.opacity(0.3), radius: 10, x: 0, y: 5)
+                }
+
+                // Copy Markdown Button
+                Button(action: copyAsMarkdown) {
+                    HStack(spacing: 4) {
+                        Image(systemName: showCopiedAlert ? "checkmark" : "doc.on.doc")
+                            .font(.caption)
+                        Text(showCopiedAlert ? "Copied!" : "Copy MD")
+                            .font(.caption.weight(.medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(showCopiedAlert ? Color.green : Color.purple)
+                    )
                 }
             }
-            .padding(.bottom, 40)
+            .padding(.horizontal)
+
+            // Display each category
+            ForEach(speechManager.extractedCategories) { category in
+                CategoryCardView(category: category)
+            }
         }
-        .onAppear {
-            requestPermissions()
+    }
+
+    // MARK: - Error View
+
+    private var errorView: some View {
+        HStack {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.red)
+            Text(speechManager.errorMessage)
+                .font(.caption)
+                .foregroundColor(.red)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.red.opacity(0.1))
+        )
+        .padding(.horizontal)
+    }
+
+    // MARK: - Bottom Controls
+
+    private var bottomControls: some View {
+        VStack(spacing: 16) {
+            // Recording Indicator
+            if speechManager.isRecording {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(Color.red)
+                        .frame(width: 8, height: 8)
+                        .modifier(PulseAnimation())
+
+                    Text("Recording...")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            // Record/Stop Button
+            Button(action: toggleRecording) {
+                HStack(spacing: 12) {
+                    Image(systemName: speechManager.isRecording ? "stop.circle.fill" : "mic.circle.fill")
+                        .font(.system(size: 28))
+
+                    Text(speechManager.isRecording ? "Stop Recording" : "Start Recording")
+                        .font(.system(size: 18, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 60)
+                .background(
+                    RoundedRectangle(cornerRadius: 30)
+                        .fill(
+                            LinearGradient(
+                                colors: speechManager.isRecording ?
+                                    [Color.red, Color.red.opacity(0.8)] :
+                                    [Color.blue, Color.blue.opacity(0.8)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .shadow(color: (speechManager.isRecording ? Color.red : Color.blue).opacity(0.3), radius: 10, x: 0, y: 5)
+                )
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 30)
+        }
+        .background(
+            LinearGradient(
+                colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 140)
+            .offset(y: -60)
+        )
+    }
+
+    // MARK: - Actions
+
+    private func toggleRecording() {
+        // Haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+
+        if speechManager.isRecording {
+            speechManager.stopRecording()
+        } else {
+            if permissionsGranted {
+                speechManager.startRecording()
+            } else {
+                requestPermissions()
+            }
         }
     }
 
     private func requestPermissions() {
         speechManager.requestPermissions { granted in
             permissionsGranted = granted
-            if granted && speechManager.isRecording {
-                // Permissions were granted, but we're not auto-starting
-                // User needs to tap Record button
-            }
         }
     }
 
-    private func copyAllLists() {
-        let markdown = formatListsAsMarkdown()
+    private func clearSession() {
+        // Haptic feedback
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.warning)
+
+        speechManager.transcribedText = ""
+        speechManager.extractedCategories = []
+        speechManager.errorMessage = ""
+    }
+
+    private func shareList() {
+        shareText = ShareHelper.formatForSharing(categories: speechManager.extractedCategories)
+        showShareSheet = true
+
+        // Haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+    }
+
+    private func copyAsMarkdown() {
+        let markdown = ShareHelper.formatAsMarkdown(categories: speechManager.extractedCategories)
         UIPasteboard.general.string = markdown
 
-        // Show copied alert
-        showCopiedAlert = true
+        // Show success feedback
+        withAnimation {
+            showCopiedAlert = true
+        }
+
+        // Haptic feedback
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
 
         // Reset after 2 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            showCopiedAlert = false
+            withAnimation {
+                showCopiedAlert = false
+            }
         }
     }
 
-    private func formatListsAsMarkdown() -> String {
-        var markdown = "# Extracted Lists\n\n"
-
-        for category in speechManager.extractedCategories {
-            markdown += "## \(category.name)\n\n"
-
-            for item in category.items {
-                markdown += "- \(item)\n"
-            }
-
-            markdown += "\n"
-        }
-
-        return markdown
+    private func wordCount(_ text: String) -> Int {
+        let words = text.components(separatedBy: .whitespacesAndNewlines)
+        return words.filter { !$0.isEmpty }.count
     }
 }
 
@@ -206,36 +354,82 @@ struct CategoryCardView: View {
     let category: ListCategory
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Category Name
-            Text(category.name)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.primary)
+        VStack(alignment: .leading, spacing: 14) {
+            // Category Header
+            HStack(spacing: 8) {
+                Text(category.emoji)
+                    .font(.title2)
+
+                Text(category.name)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                // Item count badge
+                Text("\(category.items.count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(category.color)
+                    )
+            }
+
+            // Divider
+            Rectangle()
+                .fill(category.color.opacity(0.3))
+                .frame(height: 2)
 
             // Category Items
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 ForEach(Array(category.items.enumerated()), id: \.offset) { index, item in
-                    HStack(alignment: .top, spacing: 8) {
-                        Text("•")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.blue)
+                    HStack(alignment: .top, spacing: 12) {
+                        Circle()
+                            .fill(category.color)
+                            .frame(width: 6, height: 6)
+                            .padding(.top, 6)
 
                         Text(item)
-                            .font(.system(size: 14))
+                            .font(.body)
                             .foregroundColor(.primary)
                             .fixedSize(horizontal: false, vertical: true)
+
+                        Spacer()
                     }
                 }
             }
         }
-        .padding()
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 20)
                 .fill(Color(.systemBackground))
-                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                .shadow(color: category.color.opacity(0.2), radius: 8, x: 0, y: 4)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(category.color.opacity(0.3), lineWidth: 1)
         )
         .padding(.horizontal)
+    }
+}
+
+// MARK: - Pulse Animation
+
+struct PulseAnimation: ViewModifier {
+    @State private var isAnimating = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isAnimating ? 1.2 : 1.0)
+            .opacity(isAnimating ? 0.5 : 1.0)
+            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isAnimating)
+            .onAppear {
+                isAnimating = true
+            }
     }
 }
 
