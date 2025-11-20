@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>List-y needs access to your microphone to record and transcribe your speech in real-time.</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>List-y uses speech recognition to transcribe your conversations and extract lists.</string>
+</dict>
+</plist>
