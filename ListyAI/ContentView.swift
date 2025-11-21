@@ -83,17 +83,17 @@ struct ContentView: View {
 
     private var emptyStateView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "waveform.circle.fill")
+            Image(systemName: "brain.head.profile")
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
                 .symbolEffect(.pulse)
 
-            Text("Turn conversations into action")
+            Text("Your thought-catching assistant")
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.primary)
 
-            Text("Tap record and start talking about pros, cons, ideas, or action items")
+            Text("Tap and brain dump. Talk through your to-dos, ideas, shopping lists—anything fleeting")
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -265,8 +265,27 @@ struct ContentView: View {
                 )
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 30)
+
+            // Example Suggestions (only when not recording and no content)
+            if !speechManager.isRecording && speechManager.transcribedText.isEmpty {
+                VStack(spacing: 8) {
+                    Text("Try:")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    HStack(spacing: 12) {
+                        ExampleChip(text: "List your morning to-dos")
+                        ExampleChip(text: "Plan your grocery run")
+                    }
+                    HStack(spacing: 12) {
+                        ExampleChip(text: "Capture meeting actions")
+                        ExampleChip(text: "Brain dump random ideas")
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
         }
+        .padding(.bottom, 30)
         .background(
             LinearGradient(
                 colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
@@ -414,6 +433,24 @@ struct CategoryCardView: View {
                 .stroke(category.color.opacity(0.3), lineWidth: 1)
         )
         .padding(.horizontal)
+    }
+}
+
+// MARK: - Example Chip View
+
+struct ExampleChip: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.caption2)
+            .foregroundColor(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(Color(.systemGray6))
+            )
     }
 }
 

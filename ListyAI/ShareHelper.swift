@@ -17,7 +17,7 @@ struct ShareHelper {
         dateFormatter.timeStyle = .short
         let timestamp = dateFormatter.string(from: Date())
 
-        var text = "📋 List-y Session - \(timestamp)\n\n"
+        var text = "📋 Brain Dump - \(timestamp)\n\n"
 
         for category in categories {
             text += "\(category.emoji) \(category.name):\n"

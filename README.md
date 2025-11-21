@@ -1,14 +1,14 @@
 # List-y
 
-An iOS app that extracts lists from spoken conversations in real-time using AI.
+Your personal thought-catching assistant. Brain dump your to-dos, ideas, and lists—AI organizes them instantly.
 
 ## Overview
 
-List-y is a simple, powerful iOS app that:
-- Records and transcribes speech in real-time using Apple's Speech framework
-- Extracts list items (pros, cons, features, ideas, action items) using Claude API
-- Displays categorized lists as you speak in real-time
-- Allows exporting to clipboard in markdown format
+List-y is your pocket brain dump tool:
+- **Just talk**: Tap record and verbalize your fleeting thoughts
+- **AI organizes**: Claude automatically extracts and categorizes lists
+- **Personal focus**: Perfect for morning to-dos, grocery lists, meeting notes, random ideas
+- **Instant sharing**: Export via iOS share sheet or copy as markdown
 
 ## Current Status: Step 3 Complete ✅ - Launch Ready!
 
@@ -32,7 +32,8 @@ List-y is a simple, powerful iOS app that:
 
 **Step 3 - Beautiful UI & Sharing (Launch Ready!):**
 - Polished navigation bar with "List-y" branding
-- Beautiful empty state with tagline "Turn conversations into action"
+- Beautiful empty state with brain icon and tagline "Your thought-catching assistant"
+- Example prompts: "List your morning to-dos", "Plan your grocery run", etc.
 - Color-coded category cards with emojis (✅ Pros, ❌ Cons, 💡 Ideas, etc.)
 - Word count badge showing transcription progress
 - Settings screen with Keychain-based API key storage
@@ -160,18 +161,19 @@ The app requires two permissions (configured in `Info.plist:1`):
 
 ## Screenshot-Worthy Features
 
-✨ **Every screen is designed to look beautiful:**
+✨ **Every screen is designed for personal use:**
 
-1. **Empty State**: Elegant waveform icon with inspiring tagline
+1. **Empty State**: Brain icon with "Your thought-catching assistant" + example prompts
 2. **Recording**: Gradient button with smooth pulse animation
-3. **Transcription**: Clean card with word count badge
-4. **Extracted Lists**: Color-coded cards with emojis and shadows
+3. **Quick Examples**: Chips showing "List your morning to-dos", "Plan your grocery run"
+4. **Transcription**: Clean card with word count badge
+5. **Extracted Lists**: Color-coded cards with emojis and shadows
    - ✅ Green for Pros
    - ❌ Red for Cons
    - 💡 Purple for Ideas/Suggestions
    - 📋 Orange for Action Items
-5. **Settings**: Clean form with secure Keychain storage
-6. **Share Sheet**: Native iOS sharing with formatted text
+6. **Settings**: Clean form with secure Keychain storage
+7. **Share Format**: "📋 Brain Dump - [timestamp]" for personal sharing
 
 ## Future Enhancements
 
@@ -214,23 +216,18 @@ The app requires two permissions (configured in `Info.plist:1`):
 
 ## Example Usage
 
-Try speaking something like this:
+**Use Case 1: Morning Brain Dump**
+> "Okay, let me figure out my day. I need to hit the gym, respond to that email from Sarah, pick up groceries—milk, eggs, bread, and coffee. Oh, and I should call Mom. Also brainstorming ideas for the weekend: maybe hiking, trying that new restaurant, or just catching up on Netflix."
 
-> "Let me think about the pros and cons of moving to a new city. On the pro side, there's better job opportunities, more cultural activities, and a change of scenery. For the cons, it's expensive, I'd be far from family, and I don't know anyone there. I should also make a list of action items: research neighborhoods, calculate moving costs, and visit the city for a weekend."
+**Extracted:**
+- 📋 To-dos: Hit the gym, Respond to Sarah's email, Pick up groceries, Call Mom
+- 🛒 Shopping: Milk, Eggs, Bread, Coffee
+- 💡 Weekend Ideas: Hiking, Try new restaurant, Netflix catch-up
 
-The app will extract:
+**Use Case 2: Quick Decision Making**
+> "Thinking about getting a dog. Pros: companionship, exercise motivation, home security. Cons: expensive, time commitment, travel restrictions. Things I need to research: local vets, dog-friendly apartments, training classes."
 
-**Pros:**
-- Better job opportunities
-- More cultural activities
-- Change of scenery
-
-**Cons:**
-- Expensive
-- Far from family
-- Don't know anyone there
-
-**Action Items:**
-- Research neighborhoods
-- Calculate moving costs
-- Visit the city for a weekend
+**Extracted:**
+- ✅ Pros: Companionship, Exercise motivation, Home security
+- ❌ Cons: Expensive, Time commitment, Travel restrictions
+- 📋 Research: Local vets, Dog-friendly apartments, Training classes
