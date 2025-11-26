@@ -14,7 +14,13 @@ import Foundation
 
 enum Config {
     // Get your API key from: https://console.anthropic.com/
-    static let anthropicAPIKey = "your-api-key-here"
+    // First tries to get from Keychain, falls back to hardcoded value
+    static var anthropicAPIKey: String {
+        if let keychainKey = KeychainHelper.shared.getAPIKey(), !keychainKey.isEmpty {
+            return keychainKey
+        }
+        return "your-api-key-here"
+    }
 
     // Claude model to use
     static let claudeModel = "claude-sonnet-4-20250514"
@@ -24,4 +30,9 @@ enum Config {
 
     // How often to send transcription chunks to Claude (in seconds)
     static let extractionInterval: TimeInterval = 10.0
+
+    // App metadata
+    static let appVersion = "1.0"
+    static let githubRepo = "https://github.com/TheTomHub/ListyAI"
+    static let feedbackEmail = "feedback@listyai.app"
 }

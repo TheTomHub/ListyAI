@@ -86,7 +86,6 @@ struct ContentView: View {
             Image(systemName: "brain.head.profile")
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
-                .symbolEffect(.pulse)
 
             Text("Your thought-catching assistant")
                 .font(.title3)
